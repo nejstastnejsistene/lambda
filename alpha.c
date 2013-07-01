@@ -41,13 +41,51 @@ lamVal *alpha(lamVal *x, lamVal *y) {
     return ret;
 }
 
+// Rename k to v in x.
+lamVal *rename_(char *k, char *v, lamVal *x) {
+
+    // Create a copy of x to be modified.
+    lamVal *tmp, *ret = x = copyLamVal(x);
+
+    int done = 0;
+    while (!done) {
+        switch (x->type) {
+
+            case VAR:
+                if (strcmp(k, x->varName) == 0) {
+                    x->varName = v;
+                }
+                // Exit the loop.
+                done = 1;
+                break;
+
+            case ABS:
+                if (strcmp(k, x->absVar) == 0) {
+                    x->absVar = v;
+                }
+
+                // Recur on the body.
+                x = x->absBody;
+                break;
+
+            case APP:
+                // Rename the func using conventional recursion.
+                tmp = rename_(k, v, x->appFunc);
+                free(x->appFunc);
+                x->appFunc = tmp;
+
+                // Recur on the arg.
+                x = x->appArg;
+                break;
+        }
+    }
+    return ret;
+}
+
+/*
 lamVal *rename_(char *k, char *v, lamVal *x) {
     char *tmp0;
     lamVal *tmp1, *tmp2;
-
-    if (!x) {
-        return x;
-    }
 
     switch (x->type) {
 
@@ -67,6 +105,7 @@ lamVal *rename_(char *k, char *v, lamVal *x) {
 
     return NULL;
 }
+*/
 
 // Return all variables bound in x.
 node *boundVars(lamVal *x) {
