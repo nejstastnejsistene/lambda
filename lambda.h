@@ -1,4 +1,5 @@
 #ifndef LAMBDA_H
+#define LAMBDA_H
 
 typedef enum { VAR, ABS, APP } lamType;
 

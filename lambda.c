@@ -3,6 +3,7 @@
 #include<string.h>
 
 #include "lambda.h"
+#include "alpha.h"
 
 lamVal *newVar(char *name) {
     lamVal *x = malloc(sizeof(lamVal));
@@ -67,7 +68,7 @@ void freeLamVal(lamVal *x) {
 
 lamVal *apply(lamVal *x, lamVal *y) {
     if (x->type == ABS) {
-        return substitute(x->absVar, y, x->absBody);
+        return substitute(x->absVar, y, alpha(y, x->absBody));
     } else {
         return newApp(x, y);
     }
@@ -129,25 +130,20 @@ char *showLamVal(lamVal *x) {
 }
 
 int main() {
-    lamVal id, x, y, foo, app;
+    lamVal *a, *b, *c, *id, *idc;
 
-    x.type = VAR;
-    x.varName= "x";
+    a = newVar("a");
+    b = newVar("b");
+    c = newVar("c");
 
-    y.type = VAR;
-    y.varName = "y";
+    id = newAbs("a", a);
+    idc = apply(id, c);
 
-    id.type = ABS;
-    id.absVar = "x";
-    id.absBody = &x;
-
-    app = *apply(&x, &id);
-
-    foo = *substitute("x", &y, &app);
-
-    printf("%s\n", showLamVal(&id));
-    printf("%s\n", showLamVal(&app));
-    printf("%s\n", showLamVal(&foo));
+    printf("%s\n", showLamVal(a));
+    printf("%s\n", showLamVal(b));
+    printf("%s\n", showLamVal(c));
+    printf("%s\n", showLamVal(id));
+    printf("%s\n", showLamVal(idc));
 
     return 0;
 }
