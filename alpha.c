@@ -6,20 +6,24 @@
 #include "alpha.h"
 #include "llist.h"
 
+// Rename x with respect to y.
 lamVal *alpha(lamVal *x, lamVal *y) {
     int len;
     char *k, *v;
     node *xVars, *yVars, *ks, *vs, *namespace;
 
+    // Find vars bound by both x and y.
     xVars = nub(boundVars(x));
     yVars = nub(boundVars(y));
     ks = intersection(xVars, yVars);
 
+    // Return early if there are no collisions.
     len = length(ks);
     if (!len) {
         return x;
     }
 
+    // Get new variables to replace the collisions.
     xVars = nub(allVars(x));
     yVars = nub(allVars(y));
     namespace = append(xVars, yVars);
@@ -28,6 +32,7 @@ lamVal *alpha(lamVal *x, lamVal *y) {
     k = ks->head;
     v = vs->head;
 
+    // Rename each of the variables.
     lamVal *ret = copyLamVal(x);;
     for (; ks != NULL; ks = ks->tail, vs = vs->tail) {
         ret = rename_(k, v, ret);
@@ -63,14 +68,20 @@ lamVal *rename_(char *k, char *v, lamVal *x) {
     return NULL;
 }
 
+// Return all variables bound in x.
 node *boundVars(lamVal *x) {
     return getVars(x, 0, NULL);
 }
 
+// Return all variables, free and bound, in x.
 node *allVars(lamVal *x) {
     return getVars(x, 1, NULL);
 }
 
+// Return variables in x.
+// Args:
+//  freevars    Whether to include free variables.
+//  vars        The llist node to store the results in.
 node *getVars(lamVal *x, int freeVars, node *vars) {
     int searching = 1;
     while (searching) {
@@ -94,27 +105,44 @@ node *getVars(lamVal *x, int freeVars, node *vars) {
     return vars;
 }
 
+// Returns n variables that do not collide with excluding.
 node *newVars(int n, node *excluding) {
     node *ret = NULL;
     size_t bufSize = 1024;
     char buf[bufSize], *tmp;
+    int numChars = 0, i;
+    
+    // Clear the buffer and so the next string generated will be "a".
     memset(&buf, 0, bufSize);
     buf[0] = 'a' - 1;
-    int i = 0, j;
+
+    // Generate all permutations of lowercase ascii characters.
     while (n) {
-        for (j = i; j > 0 && buf[j] == 'z'; j--) {
-            buf[j] = 'a';
+
+        // Overflow when the current char reaches 'z'.
+        for (i = numChars; i > 0 && buf[i] == 'z'; i--) {
+            buf[i] = 'a';
         }
-        if (buf[j] < 'z') {
-            buf[j]++;
+
+        // Increment the current char if it hasn't reached 'z'.
+        if (buf[i] < 'z') {
+            buf[i]++;
+
+        // When all chars have overflowed, add a new char.
         } else {
-            buf[j] = 'a';
-            buf[++i] = 'a';
+            buf[i] = 'a';
+            buf[++numChars] = 'a';
         }
+
+        // Check if the string should be excluded.
         if (!contains(buf, excluding)) {
+
+            // Copy and append the string to the list.
             tmp = malloc(strlen(buf) + 1);
             strcpy(tmp, buf);
             ret = cons(tmp, ret);
+
+            // Break if enough strings have been generated.
             if (!--n) {
                 break;
             }
