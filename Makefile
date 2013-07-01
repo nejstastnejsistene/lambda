@@ -1,2 +1,2 @@
 default:
-	gcc -Wall -o lambda *.c
+	gcc -Wall -o lambda c/*.c
