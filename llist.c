@@ -1,9 +1,9 @@
 #include<stdlib.h>
-#include<stdio.h>
+#include<string.h>
 
 #include "llist.h"
 
-node *cons(void *head, node *tail) {
+node *cons(char *head, node *tail) {
     node *x = malloc(sizeof(node));  
     x->head = head;
     x->tail = tail;
@@ -32,7 +32,7 @@ void freeList(node *x) {
     while (x != NULL) {
         prev = x;
         x = x->tail;
-        free(prev->head);
+        //free(prev->head);
         free(prev);
     }
 }
@@ -43,15 +43,15 @@ int length(node *x) {
     return n;
 }
 
-node *fromArray(void **arr, int len) {
+node *fromArray(char **arr, int len) {
     node *x = NULL;
     while (len--) {
-        x = cons(arr + len, x);
+        x = cons(arr[len], x);
     }
     return x;
 }
 
-void toArray(node *x, void **arr, int len) {
+void toArray(node *x, char **arr, int len) {
     arr += len;
     for (arr += len; len--; x = x->tail) {
         *(--arr) = x->head;
@@ -71,29 +71,29 @@ node *append(node *x, node *y) {
     return ret;
 }
 
-int containsBy(cmp_t *cmp, void *val, node *list) {
+int contains(char *val, node *list) {
     for (; list != NULL; list = list->tail) {
-        if (cmp(list->head, val) == 0) {
+        if (strcmp(list->head, val) == 0) {
             return 1;
         }
     }
     return 0;
 }
 
-node *nubBy(cmp_t *cmp, node *x) {
+node *nub(node *x) {
     node *y = NULL;
     for (; x != NULL; x = x->tail) {
-        if (!containsBy(cmp, x->head, y)) {
+        if (!contains(x->head, y)) {
             y = cons(x->head, y);
         }
     }
     return y;
 }
 
-node *intersectBy(cmp_t *cmp, node *x, node *y) {
+node *intersection(node *x, node *y) {
     node *z = NULL;
     for (; x != NULL; x = x->tail) {
-        if (containsBy(cmp, x->head, y)) {
+        if (contains(x->head, y)) {
             z = cons(x->head, z);
         }
     }

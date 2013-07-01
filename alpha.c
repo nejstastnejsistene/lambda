@@ -1,35 +1,34 @@
 #include<stdlib.h>
+#include<stdio.h>
 #include<string.h>
 
 #include "lambda.h"
 #include "alpha.h"
 #include "llist.h"
 
-cmp_t *_strcmp = (cmp_t*)&strcmp;
-
 lamVal *alpha(lamVal *x, lamVal *y) {
     int len;
     char *k, *v;
     node *xVars, *yVars, *ks, *vs, *namespace;
 
-    xVars = nubBy(_strcmp, boundVars(x));
-    yVars = nubBy(_strcmp, boundVars(y));
-    ks = intersectBy(_strcmp, xVars, yVars);
+    xVars = nub(boundVars(x));
+    yVars = nub(boundVars(y));
+    ks = intersection(xVars, yVars);
 
     len = length(ks);
     if (!len) {
         return x;
     }
 
-    xVars = nubBy(_strcmp, allVars(x));
-    yVars = nubBy(_strcmp, allVars(y));
+    xVars = nub(allVars(x));
+    yVars = nub(allVars(y));
     namespace = append(xVars, yVars);
     vs = newVars(len, namespace);
 
     k = ks->head;
     v = vs->head;
 
-    lamVal *ret;
+    lamVal *ret = copyLamVal(x);;
     for (; ks != NULL; ks = ks->tail, vs = vs->tail) {
         ret = rename_(k, v, ret);
     }
@@ -40,6 +39,10 @@ lamVal *alpha(lamVal *x, lamVal *y) {
 lamVal *rename_(char *k, char *v, lamVal *x) {
     char *tmp0;
     lamVal *tmp1, *tmp2;
+
+    if (!x) {
+        return x;
+    }
 
     switch (x->type) {
 
@@ -108,7 +111,7 @@ node *newVars(int n, node *excluding) {
             buf[j] = 'a';
             buf[++i] = 'a';
         }
-        if (!containsBy(_strcmp, buf, excluding)) {
+        if (!contains(buf, excluding)) {
             tmp = malloc(strlen(buf) + 1);
             strcpy(tmp, buf);
             ret = cons(tmp, ret);

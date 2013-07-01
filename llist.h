@@ -2,23 +2,21 @@
 #define LLIST_H
 
 typedef struct node {
-    void *head;
+    char *head;
     struct node *tail;
 } node;
 
-node *cons(void*, node*);
+node *cons(char*, node*);
 void freeList(node*);
 
-node *fromArray(void**, int);
-void toArray(node*, void**, int);
+node *fromArray(char**, int);
+void toArray(node*, char**, int);
 
 node *append(node*, node*);
 int length(node*);
 
-typedef int cmp_t(void*, void*);
-
-int containsBy(cmp_t*, void*, node*);
-node *nubBy(cmp_t*, node*);
-node *intersectBy(cmp_t*, node*, node*);
+int contains(char*, node*);
+node *nub(node*);
+node *intersection(node*, node*);
 
 #endif
