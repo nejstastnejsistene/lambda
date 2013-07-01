@@ -5,22 +5,24 @@
 #include "alpha.h"
 #include "llist.h"
 
+cmp_t *_strcmp = (cmp_t*)&strcmp;
+
 lamVal *alpha(lamVal *x, lamVal *y) {
     int len;
     char *k, *v;
     node *xVars, *yVars, *ks, *vs, *namespace;
 
-    xVars = nubBy(&strcmp, boundVars(x));
-    yVars = nubBy(&strcmp, boundVars(y));
-    ks = intersectBy(&strcmp, xVars, yVars);
+    xVars = nubBy(_strcmp, boundVars(x));
+    yVars = nubBy(_strcmp, boundVars(y));
+    ks = intersectBy(_strcmp, xVars, yVars);
 
     len = length(ks);
     if (!len) {
         return x;
     }
 
-    xVars = nubBy(&strcmp, allVars(x));
-    yVars = nubBy(&strcmp, allVars(y));
+    xVars = nubBy(_strcmp, allVars(x));
+    yVars = nubBy(_strcmp, allVars(y));
     namespace = append(xVars, yVars);
     vs = newVars(len, namespace);
 
@@ -36,17 +38,18 @@ lamVal *alpha(lamVal *x, lamVal *y) {
 }
 
 lamVal *rename_(char *k, char *v, lamVal *x) {
+    char *tmp0;
     lamVal *tmp1, *tmp2;
 
     switch (x->type) {
 
         case VAR:
-            return strcmp(k, x->varName) ? newVar(v) : x;
+            return strcmp(k, x->varName) == 0 ? newVar(v) : x;
 
         case ABS:
-            tmp1 = strcmp(k, x->absVar) ? v : x->absVar;
+            tmp0 = strcmp(k, x->absVar) == 0 ? v : x->absVar;
             tmp2 = rename_(k, v, x->absBody);
-            return newAbs(tmp1, tmp2);
+            return newAbs(tmp0, tmp2);
 
         case APP:
             tmp1 = rename_(k, v, x->appFunc);
@@ -105,7 +108,7 @@ node *newVars(int n, node *excluding) {
             buf[j] = 'a';
             buf[++i] = 'a';
         }
-        if (!containsBy(&strcmp, buf, excluding)) {
+        if (!containsBy(_strcmp, buf, excluding)) {
             tmp = malloc(strlen(buf) + 1);
             strcpy(tmp, buf);
             ret = cons(tmp, ret);
