@@ -23,6 +23,7 @@ lamVal *newVar(char*);
 lamVal *newAbs(char*, lamVal*);
 lamVal *newApp(lamVal*, lamVal*);
 lamVal *copyLamVal(lamVal*);
+char *showApp(lamVal*, int);
 void freeLamVal(lamVal*);
 
 lamVal *apply(lamVal*, lamVal*);

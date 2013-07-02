@@ -118,47 +118,70 @@ lamVal *substitute(char *k, lamVal *v, lamVal *x) {
 
 char *showLamVal(lamVal *x) {
     int length;
-    char *buf, *tmp1, *tmp2;
+    char *buf, *tmp;
     switch (x->type) {
         case VAR:
             buf = copyString(x->varName);
             x = NULL;
             break;
         case ABS:
-            tmp1 = showLamVal(x->absBody);
-            length = strlen(x->absVar) + strlen(tmp1) + 5;
+            tmp = showLamVal(x->absBody);
+            length = strlen(x->absVar) + strlen(tmp) + 5;
             buf = malloc(length + 1);
-            sprintf(buf, "(\xce\xbb%s.%s)", x->absVar, tmp1);
-            free(tmp1);
+            sprintf(buf, "(\xce\xbb%s.%s)", x->absVar, tmp);
+            free(tmp);
             break;
         case APP:
-            tmp1 = showLamVal(x->appFunc);
-            tmp2 = showLamVal(x->appArg);
-            length = strlen(tmp1) + strlen(tmp2) + 3;
-            buf = malloc(length + 1);
-            sprintf(buf, "(%s %s)", tmp1, tmp2);
-            free(tmp1);
-            free(tmp2);
+            buf = showApp(x, 1);
             break;
     }
     return buf;
 }
 
+// In order to nicely display repeated left-associative applications, the
+// parens flag controls whether or not there should be parentheses around
+// the application. This way, something like ((((a b) c) d) e) will be
+// displayed as (a b c d e).
+char *showApp(lamVal *x, int parens) {
+    int length;
+    char *buf, *func, *arg;
+    if (x->appFunc->type == APP) {
+        func = showApp(x->appFunc, 0);
+    } else {
+        func = showLamVal(x->appFunc);
+    }
+    arg = showLamVal(x->appArg);
+    length = strlen(func) + strlen(arg) + (parens ? 3 : 1);
+    buf = malloc(length + 1);
+    sprintf(buf, parens ? "(%s %s)" : "%s %s", func, arg);
+    free(func);
+    free(arg);
+    return buf;
+}
+
 int main() {
-    lamVal *two, *four, *sixteen;
+    lamVal *two, *four, *sixteen, *foo;
 
     two = toChurch(2);
     four = toChurch(4);
     sixteen = apply(two, four);
+    
+    foo = newApp(newVar("a"), newVar("b"));
+    foo = newApp(foo, newVar("c"));
+    foo = newApp(foo, newVar("d"));
+    foo = newApp(foo, newVar("e"));
 
-    printf("%s\n", showLamVal(two));
-    printf("%s\n", showLamVal(four));
-    printf("%s\n", showLamVal(newApp(two, four)));
-    printf("%s\n", showLamVal(sixteen));
+    printf("2 => %s\n", showLamVal(two));
+    printf("4 => %s\n", showLamVal(four));
+    printf("(2 4) => %s\n", showLamVal(newApp(two, four)));
+    printf("(2 4) => %s\n", showLamVal(sixteen));
+    printf("Left associatives applications:\n");
+    printf("(a b c d e) => %s\n", showLamVal(foo));
 
     freeLamVal(two);
     freeLamVal(four);
     freeLamVal(sixteen);
+    freeLamVal(foo);
 
     return 0;
 }
