@@ -6,7 +6,7 @@
 #include "alpha.h"
 #include "church.h"
 
-// helper method
+// Helper method for copying a string.
 char *copyString(char *x) {
     char *ret = malloc(strlen(x) + 1);
     strcpy(ret, x);
@@ -77,39 +77,58 @@ lamVal *copyLamVal(lamVal *x) {
     return ret;
 }
 
+// Free a lamVal completely and entirely. To avoid crashing the runtime, all
+// functions should treat lamVals as immutable and return completely fresh
+// copies of whatever they are modified.
 void freeLamVal(lamVal *x) {
     lamVal *next;
+
     int done = 0;
     while (!done) {
+
+        // Free the contents, and set the next lamVal to recur on.
         switch (x->type) {
+
             case VAR:
                 free(x->varName);
                 done = 1;
                 break;
+
             case ABS:
                 free(x->absVar);
                 next = x->absBody;
                 break;
+
             case APP:
                 freeLamVal(x->appFunc);
                 next = x->appArg;
                 break;
         };
+
+        // Free the current lamVal and recur.
         free(x);
         x = next;
     }
 }
 
+// Apply two lamVals to each other. If the first argument is an abstraction,
+// it will perform the appropriate substitution. Otherwise it will return a
+// simple App.
 lamVal *apply(lamVal *x, lamVal *y) {
     lamVal *tmp, *ret;
+
     if (x->type == ABS) {
+        // Create a temporary copy with no namespace collisions.
         tmp = alpha(x->absBody, y);
+        // Perform the substitution.
         ret = substitute(x->absVar, y, tmp);
+        // Free the temporarty copy.
         freeLamVal(tmp);
-        return ret;
     } else {
-        return newApp(copyLamVal(x), copyLamVal(y));
+        ret = newApp(copyLamVal(x), copyLamVal(y));
     }
+
+    return ret;
 }
 
 // Substitute all instances of k with v in x, until k is rebound.
