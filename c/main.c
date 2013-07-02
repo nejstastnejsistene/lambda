@@ -3,6 +3,11 @@
 #include "church.h"
 #include "lambda.h"
 
+#include "parser.h"
+#include "lexer.h"
+
+int yyparse(lamVal **expression, yyscan_t scanner);
+
 int main() {
     lamVal *zero, *one, *two, *four, *sixteen, *foobar, *foo, *bar;
 
@@ -37,6 +42,30 @@ int main() {
     freeLamVal(sixteen);
     freeLamVal(bar);
     freeLamVal(foo);
+
+
+    const char *expr = "((λx.x) (10 30))";
+    lamVal *expression;
+    yyscan_t scanner;
+    YY_BUFFER_STATE state;
+
+    if (yylex_init(&scanner)) {
+        return 1;
+    }
+
+    state = yy_scan_string(expr, scanner);
+
+    if (yyparse(&expression, scanner)) {
+        return 1;
+    }
+
+    yy_delete_buffer(state, scanner);
+
+    yylex_destroy(scanner);
+
+    printf("expression: %s\n", showLamVal(expression));
+
+    freeLamVal(expression);
 
     return 0;
 }

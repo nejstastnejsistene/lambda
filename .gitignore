@@ -1,1 +1,5 @@
 lambda
+c/lexer.c
+c/lexer.h
+c/parser.c
+c/parser.h

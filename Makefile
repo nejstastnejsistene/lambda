@@ -1,2 +1,2 @@
 default:
-	gcc -Wall -o lambda c/*.c
+	$(MAKE) -C c
