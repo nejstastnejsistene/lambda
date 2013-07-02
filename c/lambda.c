@@ -36,23 +36,45 @@ lamVal *newApp(lamVal *func, lamVal *arg) {
     return x;
 }
 
+// Create a deep copy of a lamVal.
 lamVal *copyLamVal(lamVal *x) {
-    lamVal *y = malloc(sizeof(lamVal));
-    y->type = x->type;
-    switch (x->type) {
-        case VAR:
-            y->varName = copyString(x->varName);
-            break;
-        case ABS:
-            y->absVar = copyString(x->absVar);
-            y->absBody = copyLamVal(x->absBody);
-            break;
-        case APP:
-            y->appFunc = copyLamVal(x->appFunc);
-            y->appArg = copyLamVal(x->appArg);
-            break;
-    };
-    return y;
+    lamVal *ret, *p;
+
+    // Allocate the inital lamVal.
+    ret = p = malloc(sizeof(lamVal));
+
+    int done = 0;
+    while (!done) {
+
+        p->type = x->type;
+        switch (p->type) {
+
+            case VAR:
+                // Base case.
+                p->varName = copyString(x->varName);
+                done = 1;
+                break;
+
+            case ABS:
+                p->absVar = copyString(x->absVar);
+                // Allocate body and recur.
+                p->absBody = malloc(sizeof(lamVal));
+                p = p->absBody;
+                x = x->absBody;
+                break;
+
+            case APP:
+                // Unfortunately not a tail call.
+                p->appFunc = copyLamVal(x->appFunc);
+                // Allocate arg and recur.
+                p->appArg = malloc(sizeof(lamVal));
+                p = p->appArg;
+                x = x->appArg;
+                break;
+        }
+    }
+
+    return ret;
 }
 
 void freeLamVal(lamVal *x) {
