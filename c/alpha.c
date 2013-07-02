@@ -6,7 +6,8 @@
 #include "alpha.h"
 #include "llist.h"
 
-// Rename x with respect to y.
+// Rename x with respect to y. Returns an alpha-equivalent copy of x whose
+// set of variable names does not intersect with that of y.
 lamVal *alpha(lamVal *x, lamVal *y) {
     int len;
     char *k, *v;
@@ -24,9 +25,8 @@ lamVal *alpha(lamVal *x, lamVal *y) {
     }
 
     // Get new variables to replace the collisions.
-    xVars = nub(allVars(x));
-    yVars = nub(allVars(y));
-    namespace = append(xVars, yVars);
+    namespace = nub(allVars(x));
+    append(namespace, nub(allVars(y)));
     vs = newVars(len, namespace);
 
     k = ks->head;
@@ -77,31 +77,6 @@ lamVal *rename_(char *k, char *v, lamVal *x) {
 
     return ret;
 }
-
-/*
-lamVal *rename_(char *k, char *v, lamVal *x) {
-    char *tmp0;
-    lamVal *tmp1, *tmp2;
-
-    switch (x->type) {
-
-        case VAR:
-            return strcmp(k, x->varName) == 0 ? newVar(v) : x;
-
-        case ABS:
-            tmp0 = strcmp(k, x->absVar) == 0 ? v : x->absVar;
-            tmp2 = rename_(k, v, x->absBody);
-            return newAbs(tmp0, tmp2);
-
-        case APP:
-            tmp1 = rename_(k, v, x->appFunc);
-            tmp2 = rename_(k, v, x->appArg);
-            return newApp(tmp1, tmp2);
-    }
-
-    return NULL;
-}
-*/
 
 // Return all variables bound in x.
 node *boundVars(lamVal *x) {

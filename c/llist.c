@@ -3,6 +3,7 @@
 
 #include "llist.h"
 
+// Create a new node from a head and a tail.
 node *cons(char *head, node *tail) {
     node *x = malloc(sizeof(node));  
     x->head = head;
@@ -10,6 +11,28 @@ node *cons(char *head, node *tail) {
     return x;
 }
 
+/*
+// Convert an array of strings into a list of strings.
+node *fromArray(char **arr, int len) {
+    node *x = NULL;
+    while (len--) {
+        x = cons(arr[len], x);
+    }
+    return x;
+}
+
+// Create a copy of list. Oonly the nodes are copies, the contents of the
+// the list remain unmodified.
+node *copyList(node *x) {
+    node *rev, *ret;
+    // Elegant, but somewhat wasteful.
+    rev = reverse(x);
+    ret = reverse(rev);
+    freeList(rev);
+    return ret;
+}
+
+// Reverse a list.
 node *reverse(node *x) {
     node *y = NULL;
     for (; x != NULL; x = x->tail) {
@@ -18,15 +41,16 @@ node *reverse(node *x) {
     return y;
 }
 
-node *copyList(node *x) {
-    node *rev, *ret;
-    rev = reverse(x);
-    ret = reverse(rev);
-    freeList(rev);
-    return ret;
-
+// Copy a list of strings into an array of strings.
+void toArray(node *x, char **arr, int len) {
+    arr += len;
+    for (arr += len; len--; x = x->tail) {
+        *(--arr) = x->head;
+    }
 }
+*/
 
+// Free all of the nodes in a list. The contents of the list are not freed.
 void freeList(node *x) {
     node *prev;
     while (x != NULL) {
@@ -37,40 +61,25 @@ void freeList(node *x) {
     }
 }
 
+// Return the length of a list.
 int length(node *x) {
     int n = 0;
     for (; x != NULL; x = x->tail) n++;
     return n;
 }
 
-node *fromArray(char **arr, int len) {
-    node *x = NULL;
-    while (len--) {
-        x = cons(arr[len], x);
-    }
-    return x;
-}
+// Append the second list to the first list. The first list can not be null.
+void append(node *x, node *y) {
+    node *tmp;
 
-void toArray(node *x, char **arr, int len) {
-    arr += len;
-    for (arr += len; len--; x = x->tail) {
-        *(--arr) = x->head;
-    }
-}
+    // Iterate to the end of a copy of the first list.
+    for (tmp = x; tmp->tail != NULL; tmp = tmp->tail); 
 
-node *append(node *x, node *y) {
-    if (x == NULL) {
-        return y;
-    }
-    node *ret, *tmp;
-    ret = tmp = copyList(x);
-    while (tmp->tail != NULL) {
-        tmp = tmp->tail;
-    }
+    // Link lists together.
     tmp->tail = y;
-    return ret;
 }
 
+// Return whether val is contained within list.
 int contains(char *val, node *list) {
     for (; list != NULL; list = list->tail) {
         if (strcmp(list->head, val) == 0) {
@@ -80,22 +89,27 @@ int contains(char *val, node *list) {
     return 0;
 }
 
+// Remove all duplicates from a list.
 node *nub(node *x) {
-    node *y = NULL;
+    node *ret = NULL;
+
     for (; x != NULL; x = x->tail) {
-        if (!contains(x->head, y)) {
-            y = cons(x->head, y);
+        // Insert the item if it is not already in ret.
+        if (!contains(x->head, ret)) {
+            ret = cons(x->head, ret);
         }
     }
-    return y;
+    return ret;
 }
 
+// Return the intersection of two lists. Assumes that there are no duplicates.
 node *intersection(node *x, node *y) {
-    node *z = NULL;
+    node *ret = NULL;
     for (; x != NULL; x = x->tail) {
+        // Insert the item if it is also in the second list.
         if (contains(x->head, y)) {
-            z = cons(x->head, z);
+            ret = cons(x->head, ret);
         }
     }
-    return z;
+    return ret;
 }

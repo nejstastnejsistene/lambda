@@ -8,12 +8,8 @@ typedef struct node {
 
 node *cons(char*, node*);
 void freeList(node*);
-
-node *fromArray(char**, int);
-void toArray(node*, char**, int);
-
-node *append(node*, node*);
 int length(node*);
+void append(node*, node*);
 
 int contains(char*, node*);
 node *nub(node*);
