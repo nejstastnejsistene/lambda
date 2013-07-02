@@ -1,10 +1,9 @@
-#include<stdio.h>
 #include<stdlib.h>
+#include<stdio.h>
 #include<string.h>
 
-#include "lambda.h"
 #include "alpha.h"
-#include "church.h"
+#include "lambda.h"
 
 // Helper method for copying a string.
 char *copyString(char *x) {
@@ -88,7 +87,6 @@ void freeLamVal(lamVal *x) {
 
         // Free the contents, and set the next lamVal to recur on.
         switch (x->type) {
-
             case VAR:
                 free(x->varName);
                 done = 1;
@@ -223,31 +221,4 @@ char *showApp(lamVal *x, int parens) {
     free(arg);
 
     return buf;
-}
-
-int main() {
-    lamVal *two, *four, *sixteen, *foo;
-
-    two = toChurch(2);
-    four = toChurch(4);
-    sixteen = apply(two, four);
-    
-    foo = newApp(newVar("a"), newVar("b"));
-    foo = newApp(foo, newVar("c"));
-    foo = newApp(foo, newVar("d"));
-    foo = newApp(foo, newVar("e"));
-
-    printf("2 => %s\n", showLamVal(two));
-    printf("4 => %s\n", showLamVal(four));
-    printf("(2 4) => %s\n", showLamVal(newApp(two, four)));
-    printf("(2 4) => %s\n", showLamVal(sixteen));
-    printf("Left associatives applications:\n");
-    printf("(a b c d e) => %s\n", showLamVal(foo));
-
-    freeLamVal(two);
-    freeLamVal(four);
-    freeLamVal(sixteen);
-    freeLamVal(foo);
-
-    return 0;
 }
