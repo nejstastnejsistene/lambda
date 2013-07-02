@@ -38,6 +38,7 @@ typedef void *yyscan_t;
 %token TOKEN_RPAREN
 %token <idVal> TOKEN_VAR
 %token <numVal> TOKEN_NUM
+%token UNKNOWN
 
 %type <expression> expr
 
@@ -54,4 +55,5 @@ expr
     | TOKEN_LPAREN expr TOKEN_RPAREN            { $$ = $2;             }
     | TOKEN_NUM                                 { $$ = toChurch($1);   }
     ;
+
 %%

@@ -20,23 +20,25 @@ letter      [a-zA-Z_]
 
 [ \r\n\t]*  /* skip whitespace */
 
-"λ"         { return TOKEN_LAMBDA;  }
-"\\"        { return TOKEN_LAMBDA;  }
-"."         { return TOKEN_DOT;     } 
-"("         { return TOKEN_LPAREN;  }
-")"         { return TOKEN_RPAREN;  }
+"λ"                 { return TOKEN_LAMBDA;  }
+"\\"                { return TOKEN_LAMBDA;  }
+"."                 { return TOKEN_DOT;     } 
+"("                 { return TOKEN_LPAREN;  }
+")"                 { return TOKEN_RPAREN;  }
 
-{digit}+    { yylval->numVal = atoi(yytext);
-              return TOKEN_NUM;
-            }
+{digit}+            { yylval->numVal = atoi(yytext);
+                      return TOKEN_NUM;
+                    }
 
-.           { yylval->idVal = strdup(yytext);
-              return TOKEN_VAR;
-            }
+[^ \r\n\tλ\\.()]+   { yylval->idVal = strdup(yytext);
+                      return TOKEN_VAR;
+                    }
+
+.                   { return UNKNOWN;       }
 
 %%
 
-int yyerror(const char *msg) {
+int yyerror(yyscan_t *scanner, lamVal **expression, const char *msg) {
     fprintf(stderr, "Error: %s\n", msg);
     return 0;
 }
