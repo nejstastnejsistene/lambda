@@ -6,17 +6,24 @@
 #include "alpha.h"
 #include "church.h"
 
+// helper method
+char *copyString(char *x) {
+    char *ret = malloc(strlen(x) + 1);
+    strcpy(ret, x);
+    return ret;
+}
+
 lamVal *newVar(char *name) {
     lamVal *x = malloc(sizeof(lamVal));
     x->type = VAR;
-    x->varName = name;
+    x->varName = copyString(name);
     return x;
 }
 
 lamVal *newAbs(char *varName, lamVal *body) {
     lamVal *x = malloc(sizeof(lamVal));
     x->type = ABS;
-    x->absVar = varName;
+    x->absVar = copyString(varName);
     x->absBody = body;
     return x;
 }
@@ -34,12 +41,10 @@ lamVal *copyLamVal(lamVal *x) {
     y->type = x->type;
     switch (x->type) {
         case VAR:
-            y->varName = malloc(strlen(x->varName) + 1);
-            strcpy(y->varName, x->varName);
+            y->varName = copyString(x->varName);
             break;
         case ABS:
-            y->absVar = malloc(strlen(x->absVar) + 1);
-            strcpy(y->absVar, x->absVar);
+            y->absVar = copyString(x->absVar);
             y->absBody = copyLamVal(x->absBody);
             break;
         case APP:
@@ -51,27 +56,37 @@ lamVal *copyLamVal(lamVal *x) {
 }
 
 void freeLamVal(lamVal *x) {
-    switch (x->type) {
-        case VAR:
-            free(x->varName);
-            break;
-        case ABS:
-            free(x->absVar);
-            freeLamVal(x->absBody);
-            break;
-        case APP:
-            freeLamVal(x->appFunc);
-            freeLamVal(x->appArg);
-            break;
-    };
-    free(x);
+    lamVal *next;
+    int done = 0;
+    while (!done) {
+        switch (x->type) {
+            case VAR:
+                free(x->varName);
+                done = 1;
+                break;
+            case ABS:
+                free(x->absVar);
+                next = x->absBody;
+                break;
+            case APP:
+                freeLamVal(x->appFunc);
+                next = x->appArg;
+                break;
+        };
+        free(x);
+        x = next;
+    }
 }
 
 lamVal *apply(lamVal *x, lamVal *y) {
+    lamVal *tmp, *ret;
     if (x->type == ABS) {
-        return substitute(x->absVar, y, alpha(x->absBody, y));
+        tmp = alpha(x->absBody, y);
+        ret = substitute(x->absVar, y, tmp);
+        freeLamVal(tmp);
+        return ret;
     } else {
-        return newApp(x, y);
+        return newApp(copyLamVal(x), copyLamVal(y));
     }
 }
 
@@ -80,21 +95,21 @@ lamVal *substitute(char *k, lamVal *v, lamVal *x) {
     switch (x->type) {
         case VAR:
             if (strcmp(x->varName, k) == 0) {
-                return v;
+                return copyLamVal(v);
             } else {
-                return x;
+                return copyLamVal(x);
             }
         case ABS:
             if (strcmp(x->varName, k) == 0) {
-                return x;    
+                return copyLamVal(x);    
             } else {
                 tmp1 = copyLamVal(x);
-                tmp1->absBody = substitute(k, v, x->absBody);
+                tmp1->absBody = substitute(k, v, tmp1->absBody);
                 return tmp1;
             }
         case APP:
-            tmp1 = substitute(k, v, x->appFunc);
-            tmp2 = substitute(k, v, x->appArg);
+            tmp1 = substitute(k, v, copyLamVal(x->appFunc));
+            tmp2 = substitute(k, v, copyLamVal(x->appArg));
             return apply(tmp1, tmp2);
 
     };
@@ -106,9 +121,8 @@ char *showLamVal(lamVal *x) {
     char *buf, *tmp1, *tmp2;
     switch (x->type) {
         case VAR:
-            length = strlen(x->varName) + 1;
-            buf = malloc(length + 1);
-            strcpy(buf, x->varName);
+            buf = copyString(x->varName);
+            x = NULL;
             break;
         case ABS:
             tmp1 = showLamVal(x->absBody);
@@ -131,15 +145,20 @@ char *showLamVal(lamVal *x) {
 }
 
 int main() {
-    lamVal *two, *four;
+    lamVal *two, *four, *sixteen;
 
     two = toChurch(2);
     four = toChurch(4);
+    sixteen = apply(two, four);
 
     printf("%s\n", showLamVal(two));
     printf("%s\n", showLamVal(four));
     printf("%s\n", showLamVal(newApp(two, four)));
-    printf("%s\n", showLamVal(apply(two, four)));
+    printf("%s\n", showLamVal(sixteen));
+
+    freeLamVal(two);
+    freeLamVal(four);
+    freeLamVal(sixteen);
 
     return 0;
 }

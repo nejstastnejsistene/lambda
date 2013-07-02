@@ -33,7 +33,7 @@ lamVal *alpha(lamVal *x, lamVal *y) {
     v = vs->head;
 
     // Rename each of the variables.
-    lamVal *ret = copyLamVal(x);;
+    lamVal *ret = copyLamVal(x);
     for (; ks != NULL; ks = ks->tail, vs = vs->tail) {
         ret = rename_(k, v, ret);
     }
@@ -41,11 +41,9 @@ lamVal *alpha(lamVal *x, lamVal *y) {
     return ret;
 }
 
-// Rename k to v in x.
+// Rename k to v in x, performing the modification in place.
 lamVal *rename_(char *k, char *v, lamVal *x) {
-
-    // Create a copy of x to be modified.
-    lamVal *tmp, *ret = x = copyLamVal(x);
+    lamVal *ret = x;
 
     int done = 0;
     while (!done) {
@@ -53,7 +51,7 @@ lamVal *rename_(char *k, char *v, lamVal *x) {
 
             case VAR:
                 if (strcmp(k, x->varName) == 0) {
-                    x->varName = v;
+                    x->varName = copyString(v);
                 }
                 // Exit the loop.
                 done = 1;
@@ -61,24 +59,22 @@ lamVal *rename_(char *k, char *v, lamVal *x) {
 
             case ABS:
                 if (strcmp(k, x->absVar) == 0) {
-                    x->absVar = v;
+                    x->absVar = copyString(v);
                 }
-
                 // Recur on the body.
                 x = x->absBody;
                 break;
 
             case APP:
                 // Rename the func using conventional recursion.
-                tmp = rename_(k, v, x->appFunc);
-                free(x->appFunc);
-                x->appFunc = tmp;
+                x->appFunc = rename_(k, v, x->appFunc);
 
                 // Recur on the arg.
                 x = x->appArg;
                 break;
         }
     }
+
     return ret;
 }
 
@@ -148,7 +144,7 @@ node *getVars(lamVal *x, int freeVars, node *vars) {
 node *newVars(int n, node *excluding) {
     node *ret = NULL;
     size_t bufSize = 1024;
-    char buf[bufSize], *tmp;
+    char buf[bufSize];
     int numChars = 0, i;
     
     // Clear the buffer and so the next string generated will be "a".
@@ -176,10 +172,8 @@ node *newVars(int n, node *excluding) {
         // Check if the string should be excluded.
         if (!contains(buf, excluding)) {
 
-            // Copy and append the string to the list.
-            tmp = malloc(strlen(buf) + 1);
-            strcpy(tmp, buf);
-            ret = cons(tmp, ret);
+            // Append a copy of the string to the list.
+            ret = cons(copyString(buf), ret);
 
             // Break if enough strings have been generated.
             if (!--n) {
