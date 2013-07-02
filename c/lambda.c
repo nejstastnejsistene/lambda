@@ -92,16 +92,13 @@ lamVal *apply(lamVal *x, lamVal *y) {
 
 // Substitute all instances of k with v in x, until k is rebound.
 lamVal *substitute(char *k, lamVal *v, lamVal *x) {
+    char *tmp0;
     lamVal *tmp1, *tmp2;
 
     switch (x->type) {
 
         case VAR:
-            if (strcmp(x->varName, k) == 0) {
-                return copyLamVal(v);
-            } else {
-                return copyLamVal(x);
-            }
+            return copyLamVal(strcmp(x->varName, k) == 0 ? v : x);
 
         case ABS:
             // If k has been rebound by x, return x unmodified.
@@ -109,15 +106,15 @@ lamVal *substitute(char *k, lamVal *v, lamVal *x) {
                 return copyLamVal(x);    
             // Otherwise continue substituting.
             } else {
-                tmp1 = copyLamVal(x);
-                tmp1->absBody = substitute(k, v, tmp1->absBody);
-                return tmp1;
+                tmp0 = copyString(x->absVar);
+                tmp2 = substitute(k, v, x->absBody);
+                return newAbs(tmp0, tmp2);
             }
 
         case APP:
             // Recur on copies of both branches.
-            tmp1 = substitute(k, v, copyLamVal(x->appFunc));
-            tmp2 = substitute(k, v, copyLamVal(x->appArg));
+            tmp1 = substitute(k, v, x->appFunc);
+            tmp2 = substitute(k, v, x->appArg);
             return apply(tmp1, tmp2);
 
     };
