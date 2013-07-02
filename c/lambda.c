@@ -103,6 +103,22 @@ void freeLamVal(lamVal *x) {
     }
 }
 
+lamVal *eval(lamVal *x) {
+    lamVal *ret;
+    switch (x->type) {
+        case VAR:
+            ret = copyLamVal(x);
+            break;
+        case ABS:
+            ret = newAbs(strdup(x->absVar), eval(x->absBody));
+            break;
+        case APP:
+            ret = apply(eval(x->appFunc), eval(x->appArg));
+            break;
+    }
+    return ret;
+}
+
 // Apply two lamVals to each other. If the first argument is an abstraction,
 // it will perform the appropriate substitution. Otherwise it will return a
 // simple App.

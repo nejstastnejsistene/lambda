@@ -25,6 +25,7 @@ lamVal *copyLamVal(lamVal*);
 char *showApp(lamVal*, int);
 void freeLamVal(lamVal*);
 
+lamVal *eval(lamVal*);
 lamVal *apply(lamVal*, lamVal*);
 lamVal *substitute(char*, lamVal*, lamVal*);
 
