@@ -90,24 +90,32 @@ lamVal *apply(lamVal *x, lamVal *y) {
     }
 }
 
+// Substitute all instances of k with v in x, until k is rebound.
 lamVal *substitute(char *k, lamVal *v, lamVal *x) {
     lamVal *tmp1, *tmp2;
+
     switch (x->type) {
+
         case VAR:
             if (strcmp(x->varName, k) == 0) {
                 return copyLamVal(v);
             } else {
                 return copyLamVal(x);
             }
+
         case ABS:
+            // If k has been rebound by x, return x unmodified.
             if (strcmp(x->varName, k) == 0) {
                 return copyLamVal(x);    
+            // Otherwise continue substituting.
             } else {
                 tmp1 = copyLamVal(x);
                 tmp1->absBody = substitute(k, v, tmp1->absBody);
                 return tmp1;
             }
+
         case APP:
+            // Recur on copies of both branches.
             tmp1 = substitute(k, v, copyLamVal(x->appFunc));
             tmp2 = substitute(k, v, copyLamVal(x->appArg));
             return apply(tmp1, tmp2);
@@ -116,25 +124,37 @@ lamVal *substitute(char *k, lamVal *v, lamVal *x) {
     return NULL;
 }
 
+// Create a nice string representation of a lamVal object.
+// Var x => x
+// Abs x y => (λx.y)
+// App x y => (x y)
 char *showLamVal(lamVal *x) {
     int length;
     char *buf, *tmp;
+
     switch (x->type) {
+
         case VAR:
+            // A variable is its own representation.
             buf = copyString(x->varName);
-            x = NULL;
             break;
+
         case ABS:
             tmp = showLamVal(x->absBody);
+
+            // Allocate buffer and copy into it.
             length = strlen(x->absVar) + strlen(tmp) + 5;
             buf = malloc(length + 1);
             sprintf(buf, "(\xce\xbb%s.%s)", x->absVar, tmp);
+
             free(tmp);
             break;
+
         case APP:
             buf = showApp(x, 1);
             break;
     }
+
     return buf;
 }
 
@@ -145,17 +165,25 @@ char *showLamVal(lamVal *x) {
 char *showApp(lamVal *x, int parens) {
     int length;
     char *buf, *func, *arg;
+
+    // Show an application without parentheses.
     if (x->appFunc->type == APP) {
         func = showApp(x->appFunc, 0);
+    // Show the normal way.
     } else {
         func = showLamVal(x->appFunc);
     }
     arg = showLamVal(x->appArg);
+
+    // Allocate an appropriately sized buffer, and copy into it.
     length = strlen(func) + strlen(arg) + (parens ? 3 : 1);
     buf = malloc(length + 1);
     sprintf(buf, parens ? "(%s %s)" : "%s %s", func, arg);
+
+    // Free the component strings now that we're done with them.
     free(func);
     free(arg);
+
     return buf;
 }
 
