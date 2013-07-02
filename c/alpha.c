@@ -10,33 +10,38 @@
 // set of variable names does not intersect with that of y.
 lamVal *alpha(lamVal *x, lamVal *y) {
     int len;
-    char *k, *v;
-    node *xVars, *yVars, *ks, *vs, *namespace;
+    node *xVars, *yVars, *k, *ks, *v, *vs, *namespace;
 
     // Find vars bound by both x and y.
-    xVars = nub(boundVars(x));
-    yVars = nub(boundVars(y));
+    xVars = boundVars(x);
+    yVars = boundVars(y);
     ks = intersection(xVars, yVars);
+    nub(&ks);
 
     // Return early if there are no collisions.
     len = length(ks);
     if (!len) {
-        return x;
+        return copyLamVal(x);
     }
 
     // Get new variables to replace the collisions.
-    namespace = nub(allVars(x));
-    append(namespace, nub(allVars(y)));
+    namespace = allVars(x);
+    append(namespace, allVars(y));
+    nub(&namespace);
     vs = newVars(len, namespace);
-
-    k = ks->head;
-    v = vs->head;
 
     // Rename each of the variables.
     lamVal *ret = copyLamVal(x);
-    for (; ks != NULL; ks = ks->tail, vs = vs->tail) {
-        ret = rename_(k, v, ret);
+    for (k = ks, v = vs; k != NULL; k = k->tail, v = v->tail) {
+        ret = rename_(k->head, v->head, ret);
     }
+
+    // Free up various intermediate lists.
+    freeList(xVars);
+    freeList(yVars);
+    freeList(namespace);
+    freeList(ks);
+    freeList(vs);
 
     return ret;
 }
@@ -93,14 +98,14 @@ node *allVars(lamVal *x) {
 //  freevars    Whether to include free variables.
 //  vars        The llist node to store the results in.
 node *getVars(lamVal *x, int freeVars, node *vars) {
-    int searching = 1;
-    while (searching) {
+    int done = 0;
+    while (!done) {
         switch (x->type) {
             case VAR:
                 if (freeVars) {
                     vars = cons(x->varName, vars);
                 }
-                searching = 0;
+                done = 1;
                 break;
             case ABS:
                 vars = cons(x->absVar, vars);

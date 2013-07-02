@@ -12,7 +12,7 @@ int length(node*);
 void append(node*, node*);
 
 int contains(char*, node*);
-node *nub(node*);
+void nub(node**);
 node *intersection(node*, node*);
 
 #endif

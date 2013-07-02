@@ -90,16 +90,17 @@ int contains(char *val, node *list) {
 }
 
 // Remove all duplicates from a list.
-node *nub(node *x) {
-    node *ret = NULL;
+void nub(node **x) {
+    node *p, *set = NULL;
 
-    for (; x != NULL; x = x->tail) {
+    for (p = *x; p != NULL; p = p->tail) {
         // Insert the item if it is not already in ret.
-        if (!contains(x->head, ret)) {
-            ret = cons(x->head, ret);
+        if (!contains(p->head, set)) {
+            set = cons(p->head, set);
         }
     }
-    return ret;
+    freeList(*x);
+    *x = set;
 }
 
 // Return the intersection of two lists. Assumes that there are no duplicates.
