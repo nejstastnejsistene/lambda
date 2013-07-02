@@ -56,7 +56,7 @@ lamVal *rename_(char *k, char *v, lamVal *x) {
 
             case VAR:
                 if (strcmp(k, x->varName) == 0) {
-                    x->varName = copyString(v);
+                    x->varName = strdup(v);
                 }
                 // Exit the loop.
                 done = 1;
@@ -64,7 +64,7 @@ lamVal *rename_(char *k, char *v, lamVal *x) {
 
             case ABS:
                 if (strcmp(k, x->absVar) == 0) {
-                    x->absVar = copyString(v);
+                    x->absVar = strdup(v);
                 }
                 // Recur on the body.
                 x = x->absBody;
@@ -153,7 +153,7 @@ node *newVars(int n, node *excluding) {
         if (!contains(buf, excluding)) {
 
             // Append a copy of the string to the list.
-            ret = cons(copyString(buf), ret);
+            ret = cons(strdup(buf), ret);
 
             // Break if enough strings have been generated.
             if (!--n) {

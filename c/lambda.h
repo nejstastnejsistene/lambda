@@ -18,7 +18,6 @@ typedef struct lamVal {
     };
 } lamVal;
 
-char *copyString(char*);
 lamVal *newVar(char*);
 lamVal *newAbs(char*, lamVal*);
 lamVal *newApp(lamVal*, lamVal*);

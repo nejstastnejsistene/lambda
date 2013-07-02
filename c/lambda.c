@@ -5,24 +5,18 @@
 #include "alpha.h"
 #include "lambda.h"
 
-// Helper method for copying a string.
-char *copyString(char *x) {
-    char *ret = malloc(strlen(x) + 1);
-    strcpy(ret, x);
-    return ret;
-}
 
 lamVal *newVar(char *name) {
     lamVal *x = malloc(sizeof(lamVal));
     x->type = VAR;
-    x->varName = copyString(name);
+    x->varName = strdup(name);
     return x;
 }
 
 lamVal *newAbs(char *varName, lamVal *body) {
     lamVal *x = malloc(sizeof(lamVal));
     x->type = ABS;
-    x->absVar = copyString(varName);
+    x->absVar = strdup(varName);
     x->absBody = body;
     return x;
 }
@@ -50,12 +44,12 @@ lamVal *copyLamVal(lamVal *x) {
 
             case VAR:
                 // Base case.
-                p->varName = copyString(x->varName);
+                p->varName = strdup(x->varName);
                 done = 1;
                 break;
 
             case ABS:
-                p->absVar = copyString(x->absVar);
+                p->absVar = strdup(x->absVar);
                 // Allocate body and recur.
                 p->absBody = malloc(sizeof(lamVal));
                 p = p->absBody;
@@ -145,7 +139,7 @@ lamVal *substitute(char *k, lamVal *v, lamVal *x) {
                 return copyLamVal(x);    
             // Otherwise continue substituting.
             } else {
-                tmp0 = copyString(x->absVar);
+                tmp0 = strdup(x->absVar);
                 tmp2 = substitute(k, v, x->absBody);
                 return newAbs(tmp0, tmp2);
             }
@@ -172,7 +166,7 @@ char *showLamVal(lamVal *x) {
 
         case VAR:
             // A variable is its own representation.
-            buf = copyString(x->varName);
+            buf = strdup(x->varName);
             break;
 
         case ABS:
