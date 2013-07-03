@@ -4,6 +4,7 @@
 
 #include "alpha.h"
 #include "lambda.h"
+#include "llist.h"
 
 
 lamVal *newVar(char *name) {
@@ -101,6 +102,54 @@ void freeLamVal(lamVal *x) {
         free(x);
         x = next;
     }
+}
+
+// Compare two lamVals for alpha-equivalence.
+int eq(lamVal *x, lamVal *y) {
+    return eq_(x, y, 0, NULL, NULL);
+}
+
+int eq_(lamVal *x, lamVal *y, int n, node *xEnv, node *yEnv) {
+    int xVal, yVal;
+
+    if (x->type != y->type) {
+        return 0;
+    }
+
+    switch (x->type) {
+
+        case VAR:
+            xVal = lookup(x->varName, xEnv);
+            yVal = lookup(y->varName, yEnv);
+
+            // Both variables must be either bound or not bound,
+            // not one of each.
+            if ((xVal < 0) != (yVal < 0)) {
+                return 0;
+            }
+
+            // Compare free variables by value.
+            if (xVal < 0) {
+                return strcmp(x->varName, y->varName) == 0;
+
+            // Compare bound variables by their position.
+            } else {
+                return xVal == yVal;
+            }
+
+        case ABS:
+            // Record the positions of the bound variables.
+            xEnv = put(x->absVar, n, xEnv);
+            yEnv = put(y->absVar, n, yEnv);
+            return eq_(x->absBody, y->absBody, n+1, xEnv, yEnv);
+
+        case APP:
+            // Simply recur on both sides of the application.
+            return eq_(x->appFunc, y->appFunc, n, xEnv, yEnv)
+                && eq_(x->appArg,  y->appArg,  n, xEnv, yEnv);
+    }
+
+    return 0;
 }
 
 lamVal *eval(lamVal *x) {

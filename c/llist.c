@@ -11,6 +11,21 @@ node *cons(char *head, node *tail) {
     return x;
 }
 
+node *put(char *key, int val, node *tail) {
+    node *ret = cons(key, tail);
+    ret->val = val;
+    return ret;
+}
+
+int lookup(char *key, node *list) {
+    for (; list != NULL; list = list->tail) {
+        if (strcmp(list->head, key) == 0) {
+            return list->val;
+        }
+    }
+    return -1;
+}
+
 /*
 // Convert an array of strings into a list of strings.
 node *fromArray(char **arr, int len) {

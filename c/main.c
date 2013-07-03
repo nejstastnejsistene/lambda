@@ -31,9 +31,21 @@ lamVal *parse(const char *input) {
 
 int main() {
 
+    lamVal *sixteen, *twoFour, *fourSquared;
+
+    sixteen = toChurch(16);
+    twoFour = parse("(2 4)");
+    fourSquared = eval(twoFour);
+    printf("16    => %s\n", showLamVal(sixteen));
+    printf("(2 4) => %s\n", showLamVal(fourSquared));
+    printf("16 == (2 4) => %s\n", eq(sixteen, fourSquared) ? "True" : "False");
+
+    freeLamVal(sixteen);
+    freeLamVal(twoFour);
+    freeLamVal(fourSquared);
+
     lamVal *tmp, *result;
     char buffer[1024];
-    int i;
 
     while (1) {
         printf("λ>");

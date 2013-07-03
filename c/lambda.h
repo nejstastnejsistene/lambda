@@ -1,6 +1,8 @@
 #ifndef LAMBDA_H
 #define LAMBDA_H
 
+#include "llist.h"
+
 typedef enum { VAR, ABS, APP } lamType;
 
 typedef struct lamVal {
@@ -25,6 +27,8 @@ lamVal *copyLamVal(lamVal*);
 char *showApp(lamVal*, int);
 void freeLamVal(lamVal*);
 
+int eq(lamVal*, lamVal*);
+int eq_(lamVal*, lamVal*, int, node*, node*);
 lamVal *eval(lamVal*);
 lamVal *apply(lamVal*, lamVal*);
 lamVal *substitute(char*, lamVal*, lamVal*);
